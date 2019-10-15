@@ -256,17 +256,16 @@ func benchmarkKeyGen(alg string, b *testing.B) {
 
 // List of algorithms to be tested by KeyGen, Sign, and Verify benchmark.
 var algs []string = []string{
-	"XMSS-SHA2_10_256",
 	"XMSS-SHA2_16_256",
 	"XMSS-SHA2_20_256",
 	"XMSSMT-SHA2_20/2_256",
 	"XMSSMT-SHA2_20/4_256",
 	"XMSSMT-SHA2_40/2_256",
-	"XMSSMT-SHA2_40/4_256",
+	"XMSSMT-SHA2_40 /4_256",
 }
 
 // Benchmark the key generation times for specified algorihms.
-func BenchmarkKeyGen(b *testing.B) {
+func BenchmarkXMSSMT_KeyGen(b *testing.B) {
 	if testing.Short() { // Don't test KeyGen.
 		algs = nil
 	}
@@ -290,7 +289,7 @@ func benchmarkSign(msgsize int, alg string, b *testing.B) {
 	}
 }
 
-func BenchmarkSign(b *testing.B) {
+func BenchmarkXMSSMT_Sign(b *testing.B) {
 	if testing.Short() { // Don't test Sign.
 		algs = nil
 	}
@@ -320,7 +319,7 @@ func benchmarkVerify(msgsize int, alg string, b *testing.B) {
 	}
 }
 
-func BenchmarkVerify(b *testing.B) {
+func BenchmarkXMSSMT_Verify(b *testing.B) {
 	if testing.Short() { // Don't test verify.
 		algs = nil
 	}
