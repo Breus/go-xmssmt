@@ -244,3 +244,91 @@ func TestPrivateKeyContainer(t *testing.T) {
 		t.Fatalf("sk2.Close(): %v", err)
 	}
 }
+
+func benchmarkKeyGen(alg string, b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, _, err := GenerateKeyPair(alg, "key")
+		if err != nil {
+			b.Fatalf("Keygen in KeyGen benchmark failed with error: %s", err)
+		}
+	}
+}
+
+// List of algorithms to be tested by KeyGen, Sign, and Verify benchmark.
+var algs []string = []string{
+	"XMSS-SHA2_10_256",
+	"XMSS-SHA2_16_256",
+	"XMSS-SHA2_20_256",
+	"XMSSMT-SHA2_20/2_256",
+	"XMSSMT-SHA2_20/4_256",
+	"XMSSMT-SHA2_40/2_256",
+	"XMSSMT-SHA2_40/4_256",
+}
+
+// Benchmark the key generation times for specified algorihms.
+func BenchmarkKeyGen(b *testing.B) {
+	if testing.Short() { // Don't test KeyGen.
+		algs = nil
+	}
+	for _, alg := range algs {
+		b.Run(alg, func(b *testing.B) {
+			benchmarkKeyGen(alg, b)
+		})
+	}
+}
+
+func benchmarkSign(msgsize int, alg string, b *testing.B) {
+	sk, _, err := GenerateKeyPair(alg, "key")
+	if err != nil {
+		b.Fatalf("Keygen in Sign benchmark failed with error: %s", err)
+	}
+	msg := make([]byte, msgsize)
+	rand.Read(msg)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		sk.Sign(msg)
+	}
+}
+
+func BenchmarkSign(b *testing.B) {
+	if testing.Short() { // Don't test Sign.
+		algs = nil
+	}
+	// Message size to be tested.
+	msgsize := 51200
+	for _, alg := range algs {
+		b.Run(alg, func(b *testing.B) {
+			benchmarkSign(msgsize, alg, b)
+		})
+	}
+}
+
+func benchmarkVerify(msgsize int, alg string, b *testing.B) {
+	sk, pk, err := GenerateKeyPair(alg, "key")
+	if err != nil {
+		b.Fatalf("Keygen in Verifiy benchmark failed with error: %s", err)
+	}
+	msg := make([]byte, msgsize)
+	rand.Read(msg)
+	sig, err := sk.Sign(msg)
+	if err != nil {
+		b.Fatalf("Signing in Verify benchmark failed with error: %s", err)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		pk.Verify(sig, msg)
+	}
+}
+
+func BenchmarkVerify(b *testing.B) {
+	if testing.Short() { // Don't test verify.
+		algs = nil
+	}
+	// Message size to be tested.
+	msgsize := 51200
+	for _, alg := range algs {
+		b.Run(alg, func(b *testing.B) {
+			benchmarkVerify(msgsize, alg, b)
+		})
+	}
+}
